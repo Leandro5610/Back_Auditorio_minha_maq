@@ -2,6 +2,9 @@ package senai.sp.cotia.auditorio.model;
 
 import java.util.Calendar;
 
+import lombok.Data;
+
+@Data
 public class Reservation {
 	
 	private Long id;
