@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +25,7 @@ import senai.sp.cotia.auditorio.annotation.Privado;
 import senai.sp.cotia.auditorio.annotation.Publico;
 import senai.sp.cotia.auditorio.model.Erro;
 import senai.sp.cotia.auditorio.model.TokenJWT;
-import senai.sp.cotia.auditorio.model.User;
+import senai.sp.cotia.auditorio.model.Usuario;
 import senai.sp.cotia.auditorio.repository.UserRepository;
 
 
@@ -40,29 +41,29 @@ public class UserRestController {
 		@Autowired
 		private UserRepository repository;
 		
-		@Publico
-		@RequestMapping(value="", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<Object> criarUsuario(@RequestBody User usuario) {
-			try {
-				// salvar o usuário no banco de dados
-				repository.save(usuario);
-				// retorna code 201 com a url para acesso no location e usuario inserido no corpo da resposta
-				return ResponseEntity.created(URI.create("/"+usuario.getId())).body(usuario);
+//		@Publico
+//		@RequestMapping(value="", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+//		public ResponseEntity<Object> criarUsuario(@RequestBody Usuario usuario) {
+//			try {
+//				// salvar o usuário no banco de dados
+//				repository.save(usuario);
+//				// retorna code 201 com a url para acesso no location e usuario inserido no corpo da resposta
+//				return ResponseEntity.created(URI.create("/"+usuario.getId())).body(usuario);
 				
-//				@Publico
-//				@RequestMapping(value="", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-//				public Object criarUsuario(@RequestBody User usuario) {
-//					try {
-//						// salvar o usuário no banco de dados
-//						repository.save(usuario);
-//						// retorna code 201 com a url para acesso no location e usuario inserido no corpo da resposta
-//						return "form";
+			@Publico
+			@RequestMapping(value="/1/cadastrar", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+			public Object criarUsuario(@RequestBody Usuario usuario) {
+					try {
+						// salvar o usuário no banco de dados
+						repository.save(usuario);
+						// retorna code 201 com a url para acesso no location e usuario inserido no corpo da resposta
+						return "Login";
 				
 			} catch (DataIntegrityViolationException e) {
 				e.printStackTrace();
 				Erro erro = new Erro();
 				erro.setStatusCode(500);
-				erro.setMensagem("Erro de Constraint: Registro Duplicado");
+				erro.setMensagem("Erro de Constraint: Registro Duplicado"); 
 				erro.setException(e.getClass().getName());
 				return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
 			}catch (Exception e) {
@@ -76,9 +77,9 @@ public class UserRestController {
 		
 		@Privado
 		@RequestMapping(value="/{id}", method = RequestMethod.GET)
-		public ResponseEntity<User> findUsuario(@PathVariable("id") Long idUsuario) {
+		public ResponseEntity<Usuario> findUsuario(@PathVariable("id") Long idUsuario) {
 			// busca o usuario
-			 Optional<User> user = repository.findById(idUsuario);
+			 Optional<Usuario> user = repository.findById(idUsuario);
 			 if(user.isPresent()) {
 				 return ResponseEntity.ok(user.get());
 			 }else {
@@ -88,7 +89,7 @@ public class UserRestController {
 		
 		@Privado
 		@RequestMapping(value="/{id}", method = RequestMethod.PUT)
-		public ResponseEntity<Void> atualizarUsuario(@RequestBody User usuario, @PathVariable("id") Long id) {
+		public ResponseEntity<Void> atualizarUsuario(@RequestBody Usuario usuario, @PathVariable("id") Long id) {
 			// valida o ID
 			if(id != usuario.getId()) {
 				throw new RuntimeException("ID Inválido");
@@ -111,7 +112,7 @@ public class UserRestController {
 		
 		@Publico
 		@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<TokenJWT> logar(@RequestBody User usuario) {
+		public ResponseEntity<TokenJWT> logar(@RequestBody Usuario usuario) {
 			// buscar o usuario no BD
 			usuario = repository.findByNifAndSenha(usuario.getNif(), usuario.getSenha());
 			// verifica se existe o usuario

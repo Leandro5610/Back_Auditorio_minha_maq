@@ -2,18 +2,31 @@ package senai.sp.cotia.auditorio.model;
 
 import java.util.Calendar;
 
-import lombok.Data;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import lombok.Data;
 @Data
+@Entity
 public class Reservation {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String titulo;
-	private User usuario;
 	private String descricao;
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private Calendar dataInicio;
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private Calendar dataTermino;
 	private boolean repetir;
-	private int participantes;
-
+	private String participantes;
+	@ManyToOne
+	private Usuario usuario;
+	
 }

@@ -2,10 +2,10 @@ package senai.sp.cotia.auditorio.repository;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import senai.sp.cotia.auditorio.model.User;
+import senai.sp.cotia.auditorio.model.Usuario;
 
 
-public interface UserRepository extends PagingAndSortingRepository<User, Long>{
+public interface UserRepository extends PagingAndSortingRepository<Usuario, Long>{
 	
-	public User findByNifAndSenha(String email, String senha);
+	public Usuario findByNifAndSenha(String email, String senha);
 }
