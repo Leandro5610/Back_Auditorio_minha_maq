@@ -2,6 +2,8 @@ package senai.sp.cotia.auditorio.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -24,6 +26,7 @@ public class Usuario {
 	private String email;
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private String senha;
+	@Enumerated(EnumType.STRING)
 	private Types type;
 	
 }

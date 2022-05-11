@@ -1,8 +1,8 @@
 package senai.sp.cotia.auditorio.type;
 
 public enum Types {
-	ADMINISTRATOR("Administrador"),
-	COMMOM("Comum");
+	ADMINISTRADOR("Administrador"),
+	COMUM("Comum");
 	
 	String type;
 

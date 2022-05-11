@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
@@ -51,7 +52,7 @@ public class UserRestController {
 //				return ResponseEntity.created(URI.create("/"+usuario.getId())).body(usuario);
 				
 			@Publico
-			@RequestMapping(value="/1/cadastrar", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+			@RequestMapping(value="cadastrar", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 			public Object criarUsuario(@RequestBody Usuario usuario) {
 					try {
 						// salvar o usuário no banco de dados
@@ -111,8 +112,8 @@ public class UserRestController {
 		}
 		
 		@Publico
-		@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<TokenJWT> logar(@RequestBody Usuario usuario) {
+		@RequestMapping(value = "login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+		public Object logar(@RequestBody Usuario usuario) {
 			// buscar o usuario no BD
 			usuario = repository.findByNifAndSenha(usuario.getNif(), usuario.getSenha());
 			// verifica se existe o usuario
@@ -123,16 +124,16 @@ public class UserRestController {
 				payload.put("id_usuario", usuario.getId());
 				payload.put("nif_usuario", usuario.getNif());
 				// definir a data de expiração
-				Calendar expiracao = Calendar.getInstance();
-				expiracao.add(Calendar.HOUR, 1);
-				// algoritmo para assinar o token
-				Algorithm algoritmo = Algorithm.HMAC256(SECRET);
-				// gerar o token
-				TokenJWT tokenJwt = new TokenJWT();
-				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
-				return ResponseEntity.ok(tokenJwt);
+//				Calendar expiracao = Calendar.getInstance();
+//				expiracao.add(Calendar.HOUR, 1);
+//				// algoritmo para assinar o token
+//				Algorithm algoritmo = Algorithm.HMAC256(SECRET);
+//				// gerar o token
+//				TokenJWT tokenJwt = new TokenJWT();
+//				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
+				return "Login";
 			}else {
-				return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
+				return "erro droga nao aguento mais essa vida";
 			}
 		}
 		

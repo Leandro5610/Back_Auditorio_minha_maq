@@ -4,7 +4,7 @@ package senai.sp.cotia.auditorio.type;
 
 public enum StatusEvent {
 	CONFIRMADO("Confirmado"),
-	ABERTO("Comum"),
+	ANALISE("Analise"),
 	FINALIZADO("Finalizado");
 	
 	String status;
