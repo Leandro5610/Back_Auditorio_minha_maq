@@ -1,5 +1,6 @@
 package senai.sp.cotia.auditorio.model;
 
+
 import java.util.Calendar;
 
 import javax.persistence.Entity;
@@ -20,13 +21,15 @@ public class Reservation {
 	private Long id;
 	private String titulo;
 	private String descricao;
-	@JsonFormat(pattern = "dd-MM-yyyy")
+	@JsonFormat(pattern = "dd/MM/yyyy")
 	private Calendar dataInicio;
-	@JsonFormat(pattern = "dd-MM-yyyy")
+	@JsonFormat(pattern = "dd/MM/yyyy")
 	private Calendar dataTermino;
 	private boolean repetir;
 	private String participantes;
 	@ManyToOne
-	private Usuario usuario;
+	private Usuario usuario; 
 	
+	
+
 }
