@@ -113,27 +113,26 @@ public class UserRestController {
 		
 		@Publico
 		@RequestMapping(value = "login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-		public Object logar(@RequestBody Usuario usuario) {
+		public ResponseEntity<TokenJWT> logar(@RequestBody Usuario usuario) {
 			// buscar o usuario no BD
 			usuario = repository.findByNifAndSenha(usuario.getNif(), usuario.getSenha());
 			// verifica se existe o usuario
 			if(usuario != null) {
-				// valores adicionais para o token
-				// K = tipo de dado, V = o que vai colocar nela
 				Map<String, Object> payload = new HashMap<String, Object>();
-				payload.put("id_usuario", usuario.getId());
-				payload.put("nif_usuario", usuario.getNif());
+				payload.put("user_nif", usuario.getNif());
+				payload.put("user_name", usuario.getSenha());
 				// definir a data de expiração
-//				Calendar expiracao = Calendar.getInstance();
-//				expiracao.add(Calendar.HOUR, 1);
-//				// algoritmo para assinar o token
-//				Algorithm algoritmo = Algorithm.HMAC256(SECRET);
-//				// gerar o token
-//				TokenJWT tokenJwt = new TokenJWT();
-//				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
-				return "Login";
+				Calendar expiracao = Calendar.getInstance();
+				expiracao.add(Calendar.HOUR, 1);
+				// algoritmo para assinar o token
+				Algorithm algoritmo = Algorithm.HMAC256(SECRET);
+				// gerar o token
+				TokenJWT tokenJwt = new TokenJWT();
+				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
+				System.out.println(tokenJwt);
+				return ResponseEntity.ok(tokenJwt);
 			}else {
-				return "erro droga nao aguento mais essa vida";
+				return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
 			}
 		}
 		

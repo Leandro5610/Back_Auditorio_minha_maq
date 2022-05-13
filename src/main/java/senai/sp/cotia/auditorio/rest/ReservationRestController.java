@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import senai.sp.cotia.auditorio.model.Reservation;
+import senai.sp.cotia.auditorio.model.Usuario;
 import senai.sp.cotia.auditorio.repository.ReservationRepository;
+import senai.sp.cotia.auditorio.type.StatusEvent;
 
 
 
@@ -23,7 +25,9 @@ import senai.sp.cotia.auditorio.repository.ReservationRepository;
 	private ReservationRepository repository;
 	
 	@RequestMapping(value = "save", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public Object saveReservation(@RequestBody Reservation reservation) {
+	public Object saveReservation(@RequestBody Reservation reservation, Long userId) {
+		reservation.setStatusEvent(StatusEvent.ANALISE);
+		//reservation.setUsuario(repository.findUserById(userId).get());;
 	return repository.save(reservation);
 	}
 
