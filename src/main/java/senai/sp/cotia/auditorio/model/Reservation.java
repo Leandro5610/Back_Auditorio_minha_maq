@@ -24,9 +24,9 @@ public class Reservation {
 	private Long id;
 	private String titulo;
 	private String descricao;
-	@JsonFormat(pattern = "dd-MM-yyyy")
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private Calendar dataInicio;
-	@JsonFormat(pattern = "dd-MM-yyyy")
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private Calendar dataTermino;
 	private boolean repetir;
 	private String participantes;

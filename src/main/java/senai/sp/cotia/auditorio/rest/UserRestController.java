@@ -41,15 +41,6 @@ public class UserRestController {
 		
 		@Autowired
 		private UserRepository repository;
-		
-//		@Publico
-//		@RequestMapping(value="", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-//		public ResponseEntity<Object> criarUsuario(@RequestBody Usuario usuario) {
-//			try {
-//				// salvar o usuário no banco de dados
-//				repository.save(usuario);
-//				// retorna code 201 com a url para acesso no location e usuario inserido no corpo da resposta
-//				return ResponseEntity.created(URI.create("/"+usuario.getId())).body(usuario);
 				
 			@Publico
 			@RequestMapping(value="cadastrar", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -58,8 +49,7 @@ public class UserRestController {
 						// salvar o usuário no banco de dados
 						repository.save(usuario);
 						// retorna code 201 com a url para acesso no location e usuario inserido no corpo da resposta
-						return "Login";
-				
+						return ResponseEntity.ok(HttpStatus.CREATED);
 			} catch (DataIntegrityViolationException e) {
 				e.printStackTrace();
 				Erro erro = new Erro();
@@ -119,8 +109,8 @@ public class UserRestController {
 			// verifica se existe o usuario
 			if(usuario != null) {
 				Map<String, Object> payload = new HashMap<String, Object>();
-				payload.put("user_nif", usuario.getNif());
-				payload.put("user_name", usuario.getSenha());
+				payload.put("usuario_id", usuario.getId());
+				payload.put("usuario_nif", usuario.getNif());
 				// definir a data de expiração
 				Calendar expiracao = Calendar.getInstance();
 				expiracao.add(Calendar.HOUR, 1);
@@ -129,7 +119,6 @@ public class UserRestController {
 				// gerar o token
 				TokenJWT tokenJwt = new TokenJWT();
 				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
-				System.out.println(tokenJwt);
 				return ResponseEntity.ok(tokenJwt);
 			}else {
 				return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);

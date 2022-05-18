@@ -60,7 +60,7 @@ public class AppInterceptor implements HandlerInterceptor {
 				if (metodoChamado.getMethodAnnotation(Privado.class) != null) {
 					try {
 					// obtem o token da request
-					token = request.getHeader("Authorization");
+					token = request.getHeader("sessionStorage");
 					// algoritmo para descriptografar
 					Algorithm algoritmo = Algorithm.HMAC256(UserRestController.SECRET);
 					// objeto para verificar o token
@@ -68,7 +68,7 @@ public class AppInterceptor implements HandlerInterceptor {
 					DecodedJWT jwt = verifier.verify(token);
 					// extrair os dados do payload
 					Map<String, Claim> payloadMap = jwt.getClaims();
-					System.out.println(payloadMap.get("nome_usuario"));
+					System.out.println(payloadMap.get("usuario_id"));
 					return true;
 					}catch (Exception e) {
 						if(token == null) {
