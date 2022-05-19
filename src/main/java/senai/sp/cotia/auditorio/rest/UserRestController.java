@@ -111,6 +111,7 @@ public class UserRestController {
 				Map<String, Object> payload = new HashMap<String, Object>();
 				payload.put("usuario_id", usuario.getId());
 				payload.put("usuario_nif", usuario.getNif());
+				payload.put("usuario_tipo", usuario.getType());
 				// definir a data de expiração
 				Calendar expiracao = Calendar.getInstance();
 				expiracao.add(Calendar.HOUR, 1);

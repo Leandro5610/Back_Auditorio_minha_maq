@@ -29,6 +29,7 @@ public class AppInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
+		
 		// variavel para descobrir pra onde estao tentando ir
 		String uri = request.getRequestURI();
 
@@ -71,6 +72,7 @@ public class AppInterceptor implements HandlerInterceptor {
 					System.out.println(payloadMap.get("usuario_id"));
 					return true;
 					}catch (Exception e) {
+						e.printStackTrace();
 						if(token == null) {
 							response.sendError(HttpStatus.UNAUTHORIZED.value()); 
 							e.getMessage();
@@ -101,6 +103,7 @@ public class AppInterceptor implements HandlerInterceptor {
 				}
 			}
 		}
+	
 		return true;
 	}
 

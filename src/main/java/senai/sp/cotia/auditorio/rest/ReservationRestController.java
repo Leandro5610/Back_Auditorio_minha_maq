@@ -1,6 +1,7 @@
 package senai.sp.cotia.auditorio.rest;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -24,106 +25,116 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import senai.sp.cotia.auditorio.model.Erro;
 import senai.sp.cotia.auditorio.model.Reservation;
 import senai.sp.cotia.auditorio.model.Usuario;
 import senai.sp.cotia.auditorio.repository.ReservationRepository;
 import senai.sp.cotia.auditorio.repository.UserRepository;
 import senai.sp.cotia.auditorio.type.StatusEvent;
 
-
-
-	@RestController
-	@RequestMapping("api/reservation")
-	public class ReservationRestController {
+@RestController
+@RequestMapping("api/reservation")
+public class ReservationRestController {
 	@Autowired
 	private ReservationRepository repository;
 	@Autowired
 	private UserRepository userRepo;
-	
+
 	@RequestMapping(value = "save", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public Object saveReservation(@RequestBody Reservation reservation, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException {
-		reservation.setStatusEvent(StatusEvent.ANALISE);
-		String token = null;
-		try {
-            // obtem o token da request
-            token = request.getHeader("Authorization");
-            // algoritimo para descriptografar
-            Algorithm algoritimo = Algorithm.HMAC256(UserRestController.SECRET);
-            // objeto para verificar o token    
-            JWTVerifier verifier = JWT.require(algoritimo).withIssuer(UserRestController.EMISSOR).build();
-            // validar o token
-            DecodedJWT decoded = verifier.verify(token);
-            // extrair os dados do payload
-            Map<String, Claim> payload = decoded.getClaims();
-            Long id = Long.parseLong(payload.get("usuario_id").toString());
-            Usuario user = new Usuario();
-            user.setId(id);
-            System.out.println(decoded.getClaims());
-            System.out.println(decoded);
-            reservation.setUsuario(user);
-        } catch (Exception e) {
-        	e.printStackTrace();
-            if(token == null) {
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
-            }else {
-                response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
-            }
-        }
-		return repository.save(reservation);
+	public ResponseEntity<Object> saveReservation(@RequestBody Reservation reservation, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws IOException {
+		
+		Calendar dataAtual = Calendar.getInstance();
+		if (reservation.getDataInicio().before(dataAtual.getTimeInMillis())) {
+			System.out.println(dataAtual);
+//			SimpleDateFormat fmt = new SimpleDateFormat();
+//			fmt.format(dataAtual);
+//			System.out.println(dataAtual);
+//			System.out.println("PASSOU 1");
+			return ResponseEntity.badRequest().build();
+		} else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
+			System.out.println("PASSOU 2");
+			return ResponseEntity.badRequest().build();
+		} else {			
+			reservation.setStatusEvent(StatusEvent.CONFIRMADO);
+			String token = null;
+			try {
+				// obtem o token da request
+				token = request.getHeader("Authorization");
+				// algoritimo para descriptografar
+				Algorithm algoritimo = Algorithm.HMAC256(UserRestController.SECRET);
+				// objeto para verificar o token
+				JWTVerifier verifier = JWT.require(algoritimo).withIssuer(UserRestController.EMISSOR).build();
+				// validar o token
+				System.out.println(token);
+				DecodedJWT decoded = verifier.verify(token);
+				// extrair os dados do payload
+				Map<String, Claim> payload = decoded.getClaims();
+				Long id = Long.parseLong(payload.get("usuario_id").toString());
+				Usuario user = new Usuario();
+				user.setId(id);
+				reservation.setUsuario(user);
+			} catch (Exception e) {
+				e.printStackTrace();
+				if (token == null) {
+					response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+				} else {
+					response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
+				}
+			}
+			repository.save(reservation);
+			return ResponseEntity.ok().build();
+		}
 	}
 
-	@RequestMapping(value = "", method = RequestMethod.GET) 
-	public Iterable<Reservation> getReservations(){
-	return repository.findAll();
-}
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public Iterable<Reservation> getReservations() {
+		isFinalizada();
+		return repository.findAll();
+	}
 
-	@RequestMapping(value = "/{id}")
+	public void isFinalizada() {
+		Calendar horaAtual = Calendar.getInstance();
+		for (Reservation reserv : repository.findAll()) {
+			if (reserv.getDataTermino().before(horaAtual)) {
+				reserv.setStatusEvent(StatusEvent.FINALIZADO);
+
+			}
+		}
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteReservation(@PathVariable("id") Long id) {
-	repository.deleteById(id);
-	return ResponseEntity.noContent().build();
+		repository.deleteById(id);
+		return ResponseEntity.noContent().build();
 	}
-	
-	
-	@RequestMapping(value = "final{id}", method = RequestMethod.PUT)
-    public Object statusFinalizada(Reservation reserva, @PathVariable("id") Long id) {
-        Calendar horaAtual = Calendar.getInstance();
-        if (id != null) {
-            throw new RuntimeException("Id Inválido");
-            
-        }else if (reserva.getDataTermino().after(horaAtual)) {
-            reserva.setStatusEvent(StatusEvent.FINALIZADO);
-            repository.save(reserva);
-        }
-        // se o a reserva acabar enviar para o Histórico
-        return repository.save(reserva);
-    }
-	
+
 	@RequestMapping(value = "confirmada{id}", method = RequestMethod.PUT)
-    public Object statusConfirmada(Reservation reserva, @PathVariable("id") Long id) {
-        Calendar horaAtual = Calendar.getInstance();
-        if (id != null) {
-            throw new RuntimeException("Id Inválido");
-            
-        }else if (reserva.getDataTermino().after(horaAtual)) {
-            reserva.setStatusEvent(StatusEvent.CONFIRMADO);
-            repository.save(reserva);
-        }
-        // se o a reserva acabar enviar para o Histórico
-        return repository.save(reserva);
-    }
-	
+	public Object statusConfirmada(Reservation reserva, @PathVariable("id") Long id) {
+		Calendar horaAtual = Calendar.getInstance();
+		if (id != null) {
+			throw new RuntimeException("Id Inválido");
+
+		} else if (reserva.getDataTermino().after(horaAtual)) {
+			reserva.setStatusEvent(StatusEvent.CONFIRMADO);
+			repository.save(reserva);
+		}
+		// se o a reserva acabar enviar para o Histórico
+		return repository.save(reserva);
+	}
+
 	@RequestMapping(value = "analise{id}", method = RequestMethod.PUT)
-    public Object statusAnalise(Reservation reserva, @PathVariable("id") Long id) {
-        Calendar horaAtual = Calendar.getInstance();
-        if (id != null) {
-            throw new RuntimeException("Id Inválido");
-            
-        }else if (reserva.getDataTermino().after(horaAtual)) {
-            reserva.setStatusEvent(StatusEvent.ANALISE);
-            repository.save(reserva);
-        }
-        // se o a reserva acabar enviar para o Histórico
-        return repository.save(reserva);
-    }
-	
+	public Object statusAnalise(Reservation reserva, @PathVariable("id") Long id) {
+		Calendar horaAtual = Calendar.getInstance();
+		if (id != null) {
+			throw new RuntimeException("Id Inválido");
+
+		} else if (reserva.getDataTermino().after(horaAtual)) {
+			reserva.setStatusEvent(StatusEvent.ANALISE);
+			repository.save(reserva);
+		}
+		// se o a reserva acabar enviar para o Histórico
+		return repository.save(reserva);
+	}
+
 }
