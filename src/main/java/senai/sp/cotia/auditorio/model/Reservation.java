@@ -31,9 +31,9 @@ public class Reservation {
 	private boolean repetir;
 	private String participantes;
 	@ManyToOne
-	private Usuario usuario; 
+	private Usuario usuario;
 	@Enumerated(EnumType.STRING)
-	private StatusEvent statusEvent;
+	private StatusEvent status;
 	
 	
 	

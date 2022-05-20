@@ -22,6 +22,7 @@ public class Usuario {
 	private Long id;
 	@Column(unique = true)
 	private String nif;
+	private String nome;
 	@Column(unique = true)
 	private String email;
 	@JsonProperty(access = Access.WRITE_ONLY)

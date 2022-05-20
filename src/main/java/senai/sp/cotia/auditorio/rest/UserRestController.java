@@ -111,7 +111,7 @@ public class UserRestController {
 				Map<String, Object> payload = new HashMap<String, Object>();
 				payload.put("usuario_id", usuario.getId());
 				payload.put("usuario_nif", usuario.getNif());
-				payload.put("usuario_tipo", usuario.getType());
+				//payload.put("usuario_nome", usuario.getNome());
 				// definir a data de expiração
 				Calendar expiracao = Calendar.getInstance();
 				expiracao.add(Calendar.HOUR, 1);
@@ -120,6 +120,7 @@ public class UserRestController {
 				// gerar o token
 				TokenJWT tokenJwt = new TokenJWT();
 				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
+				System.out.println(tokenJwt);
 				return ResponseEntity.ok(tokenJwt);
 			}else {
 				return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);

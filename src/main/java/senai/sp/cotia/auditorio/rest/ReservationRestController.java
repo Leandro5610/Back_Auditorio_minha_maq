@@ -46,17 +46,11 @@ public class ReservationRestController {
 		
 		Calendar dataAtual = Calendar.getInstance();
 		if (reservation.getDataInicio().before(dataAtual.getTimeInMillis())) {
-			System.out.println(dataAtual);
-//			SimpleDateFormat fmt = new SimpleDateFormat();
-//			fmt.format(dataAtual);
-//			System.out.println(dataAtual);
-//			System.out.println("PASSOU 1");
 			return ResponseEntity.badRequest().build();
 		} else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
-			System.out.println("PASSOU 2");
 			return ResponseEntity.badRequest().build();
 		} else {			
-			reservation.setStatusEvent(StatusEvent.CONFIRMADO);
+			reservation.setStatus(StatusEvent.CONFIRMADO);
 			String token = null;
 			try {
 				// obtem o token da request
@@ -74,12 +68,14 @@ public class ReservationRestController {
 				Usuario user = new Usuario();
 				user.setId(id);
 				reservation.setUsuario(user);
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				if (token == null) {
 					response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
 				} else {
 					response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
+					
 				}
 			}
 			repository.save(reservation);
@@ -97,7 +93,8 @@ public class ReservationRestController {
 		Calendar horaAtual = Calendar.getInstance();
 		for (Reservation reserv : repository.findAll()) {
 			if (reserv.getDataTermino().before(horaAtual)) {
-				reserv.setStatusEvent(StatusEvent.FINALIZADO);
+				reserv.setStatus(StatusEvent.FINALIZADO);
+				repository.save(reserv);
 
 			}
 		}
@@ -116,7 +113,7 @@ public class ReservationRestController {
 			throw new RuntimeException("Id Inválido");
 
 		} else if (reserva.getDataTermino().after(horaAtual)) {
-			reserva.setStatusEvent(StatusEvent.CONFIRMADO);
+			reserva.setStatus(StatusEvent.CONFIRMADO);
 			repository.save(reserva);
 		}
 		// se o a reserva acabar enviar para o Histórico
@@ -130,11 +127,16 @@ public class ReservationRestController {
 			throw new RuntimeException("Id Inválido");
 
 		} else if (reserva.getDataTermino().after(horaAtual)) {
-			reserva.setStatusEvent(StatusEvent.ANALISE);
+			reserva.setStatus(StatusEvent.ANALISE);
 			repository.save(reserva);
 		}
 		// se o a reserva acabar enviar para o Histórico
 		return repository.save(reserva);
 	}
+	
+	@RequestMapping(value = "historico", method = RequestMethod.GET)
+    public Iterable<Reservation> getAllHistorico() {
+        return repository.findAllByStatus(StatusEvent.FINALIZADO);
+    }
 
 }
