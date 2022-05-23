@@ -1,4 +1,4 @@
-package senai.sp.cotia.auditorio.model;
+ package senai.sp.cotia.auditorio.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

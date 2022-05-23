@@ -1,6 +1,7 @@
 package senai.sp.cotia.auditorio.rest;
 
 import java.io.IOException;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import senai.sp.cotia.auditorio.annotation.Privado;
 import senai.sp.cotia.auditorio.model.Erro;
 import senai.sp.cotia.auditorio.model.Reservation;
 import senai.sp.cotia.auditorio.model.Usuario;
@@ -32,13 +35,13 @@ import senai.sp.cotia.auditorio.repository.ReservationRepository;
 import senai.sp.cotia.auditorio.repository.UserRepository;
 import senai.sp.cotia.auditorio.type.StatusEvent;
 
+
 @RestController
 @RequestMapping("api/reservation")
 public class ReservationRestController {
 	@Autowired
 	private ReservationRepository repository;
-	@Autowired
-	private UserRepository userRepo;
+
 
 	@RequestMapping(value = "save", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> saveReservation(@RequestBody Reservation reservation, HttpServletRequest request,
@@ -138,5 +141,22 @@ public class ReservationRestController {
     public Iterable<Reservation> getAllHistorico() {
         return repository.findAllByStatus(StatusEvent.FINALIZADO);
     }
+	
+	@Privado
+	@RequestMapping(value="/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Void> atualizarUsuario(@RequestBody Reservation reserva, @PathVariable("id") Long id) {
+		// valida o ID
+		if(id != reserva.getId()) {
+			throw new RuntimeException("ID Inválido");
+		}
+		// salva o usuario no BD
+		repository.save(reserva);
+		// criar um cabeçalho HTTP
+		HttpHeaders header = new HttpHeaders();
+		header.setLocation(URI.create("/api/reservation"));
+		return new ResponseEntity<Void>(header, HttpStatus.OK);
+		
+	}
+	
 
 }

@@ -1,13 +1,16 @@
 package senai.sp.cotia.auditorio.rest;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +31,7 @@ import senai.sp.cotia.auditorio.model.Erro;
 import senai.sp.cotia.auditorio.model.TokenJWT;
 import senai.sp.cotia.auditorio.model.Usuario;
 import senai.sp.cotia.auditorio.repository.UserRepository;
+import senai.sp.cotia.auditorio.type.Types;
 
 
 @RestController
@@ -121,11 +125,39 @@ public class UserRestController {
 				TokenJWT tokenJwt = new TokenJWT();
 				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
 				System.out.println(tokenJwt);
+				if(usuario.getType().equals(Types.ADMINISTRADOR)) {
+				listaComuns();
+				}else {
+					return null;
+					
+				}
 				return ResponseEntity.ok(tokenJwt);
 			}else {
 				return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
 			}
 		}
+		
+		@Publico
+		@RequestMapping(value = "lista", method = RequestMethod.GET)
+		public Iterable<Usuario> listaUsuario(){
+			return repository.findAll();
+			
+			
+		}
+		
+		@Privado
+		@RequestMapping(value = "verifica", method = RequestMethod.GET)
+		public List<Usuario> listaComuns() {
+			
+			return repository.findAllByCommuns() ;
+			
+			
+			
+			
+		}
+	
+		
+		
 		
 		
 		
