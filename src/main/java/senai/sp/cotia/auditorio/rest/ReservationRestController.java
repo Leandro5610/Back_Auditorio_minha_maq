@@ -158,5 +158,11 @@ public class ReservationRestController {
 		
 	}
 	
+	@RequestMapping(value = "/findbyall/{p}")
+	public Iterable<Reservation> findByAll(@PathVariable("p") String param){
+		return repository.procurarTudo(param);
+	}
 
+	
+	
 }

@@ -61,7 +61,7 @@ public class AppInterceptor implements HandlerInterceptor {
 				if (metodoChamado.getMethodAnnotation(Privado.class) != null) {
 					try {
 					// obtem o token da request
-					token = request.getHeader("sessionStorage");
+					token = request.getHeader("Authorization");
 					// algoritmo para descriptografar
 					Algorithm algoritmo = Algorithm.HMAC256(UserRestController.SECRET);
 					// objeto para verificar o token

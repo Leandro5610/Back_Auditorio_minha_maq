@@ -141,19 +141,12 @@ public class UserRestController {
 		@RequestMapping(value = "lista", method = RequestMethod.GET)
 		public Iterable<Usuario> listaUsuario(){
 			return repository.findAll();
-			
-			
 		}
 		
 		@Privado
 		@RequestMapping(value = "verifica", method = RequestMethod.GET)
 		public List<Usuario> listaComuns() {
-			
 			return repository.findAllByCommuns() ;
-			
-			
-			
-			
 		}
 	
 		
