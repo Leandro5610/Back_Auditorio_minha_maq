@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "TB_EMAIL")
+@Table(name = "EMAIL")
 public class EmailModel implements Serializable {
     private static final long serialVersionUID = 1L;
 

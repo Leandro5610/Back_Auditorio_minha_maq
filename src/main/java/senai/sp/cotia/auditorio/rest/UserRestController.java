@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,7 +27,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.rpc.context.AttributeContext.Response;
 
 import senai.sp.cotia.auditorio.annotation.Privado;
 import senai.sp.cotia.auditorio.annotation.Publico;
@@ -105,6 +113,8 @@ public class UserRestController {
 			return ResponseEntity.noContent().build();
 		}
 		
+		
+		
 		@Publico
 		@RequestMapping(value = "login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 		public ResponseEntity<TokenJWT> logar(@RequestBody Usuario usuario) {
@@ -115,6 +125,7 @@ public class UserRestController {
 				Map<String, Object> payload = new HashMap<String, Object>();
 				payload.put("usuario_id", usuario.getId());
 				payload.put("usuario_nif", usuario.getNif());
+				payload.put("usuario_tipo", usuario.getType().toString());
 				//payload.put("usuario_nome", usuario.getNome());
 				// definir a data de expiração
 				Calendar expiracao = Calendar.getInstance();
@@ -124,13 +135,6 @@ public class UserRestController {
 				// gerar o token
 				TokenJWT tokenJwt = new TokenJWT();
 				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).withExpiresAt(expiracao.getTime()).sign(algoritmo));
-				System.out.println(tokenJwt);
-				if(usuario.getType().equals(Types.ADMINISTRADOR)) {
-				listaComuns();
-				}else {
-					return null;
-					
-				}
 				return ResponseEntity.ok(tokenJwt);
 			}else {
 				return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
@@ -148,6 +152,28 @@ public class UserRestController {
 		public List<Usuario> listaComuns() {
 			return repository.findAllByCommuns() ;
 		}
+		
+		
+		@Privado
+		@RequestMapping(value = "decodaToken", method = RequestMethod.GET)
+		public ResponseEntity<String> decode(HttpServletRequest request,
+				HttpServletResponse response) {
+			String token = null;
+			// obtem o token da request
+			token = request.getHeader("Authorization");
+			// algoritimo para descriptografar
+			Algorithm algoritimo = Algorithm.HMAC256(UserRestController.SECRET);
+			// objeto para verificar o token
+			JWTVerifier verifier = JWT.require(algoritimo).withIssuer(UserRestController.EMISSOR).build();
+			// validar o token
+			DecodedJWT decoded = verifier.verify(token);
+			// extrair os dados do payload
+			Map<String, Claim> payload = decoded.getClaims();
+			String tipo = payload.get("usuario_tipo").toString();
+			return ResponseEntity.ok(tipo);
+		}
+		
+		
 	
 		
 		

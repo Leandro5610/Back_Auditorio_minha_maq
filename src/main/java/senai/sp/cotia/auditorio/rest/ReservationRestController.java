@@ -71,7 +71,7 @@ public class ReservationRestController {
 				Usuario user = new Usuario();
 				user.setId(id);
 				reservation.setUsuario(user);
-				
+				System.out.println(token);
 			} catch (Exception e) {
 				e.printStackTrace();
 				if (token == null) {
