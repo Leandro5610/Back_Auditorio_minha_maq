@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,57 +36,77 @@ import senai.sp.cotia.auditorio.repository.ReservationRepository;
 import senai.sp.cotia.auditorio.repository.UserRepository;
 import senai.sp.cotia.auditorio.type.StatusEvent;
 
-
 @RestController
 @RequestMapping("api/reservation")
 public class ReservationRestController {
 	@Autowired
 	private ReservationRepository repository;
 
-
 	@RequestMapping(value = "save", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> saveReservation(@RequestBody Reservation reservation, HttpServletRequest request,
-			HttpServletResponse response, HttpSession session) throws IOException {
-		
-		Calendar dataAtual = Calendar.getInstance();
-		if (reservation.getDataInicio().before(dataAtual.getTimeInMillis())) {
-			return ResponseEntity.badRequest().build();
-		} else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
-			return ResponseEntity.badRequest().build();
-		} else {			
-			reservation.setStatus(StatusEvent.CONFIRMADO);
-			String token = null;
-			try {
-				// obtem o token da request
-				token = request.getHeader("Authorization");
-				// algoritimo para descriptografar
-				Algorithm algoritimo = Algorithm.HMAC256(UserRestController.SECRET);
-				// objeto para verificar o token
-				JWTVerifier verifier = JWT.require(algoritimo).withIssuer(UserRestController.EMISSOR).build();
-				// validar o token
-				System.out.println(token);
-				DecodedJWT decoded = verifier.verify(token);
-				// extrair os dados do payload
-				Map<String, Claim> payload = decoded.getClaims();
-				Long id = Long.parseLong(payload.get("usuario_id").toString());
-				Usuario user = new Usuario();
-				user.setId(id);
-				reservation.setUsuario(user);
-				System.out.println(token);
-			} catch (Exception e) {
-				e.printStackTrace();
-				if (token == null) {
-					response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
-				} else {
-					response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
-					
-				}
-			}
-			repository.save(reservation);
-			return ResponseEntity.ok().build();
-		}
-	}
+            HttpServletResponse response, HttpSession session) throws IOException {
+        Erro erro = new Erro();
+        erro.setStatusCode(406);
+        
+        Calendar dataAtual = Calendar.getInstance();
+        Calendar diaEscolhido = Calendar.getInstance();
+        int dia = diaEscolhido.get(Calendar.DAY_OF_WEEK);
+        int horaInicioMin=07, horaInicMax =21,horaTerminoMin=8,horaTermMax=22,minuto=31; 
+          
+    
+         if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY) < horaInicioMin) {
+            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+        }else if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY)>= horaInicMax&& reservation.getDataInicio().get(Calendar.MINUTE) >= minuto ) {
+            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+        }else if (reservation.getDataTermino().get(Calendar.HOUR_OF_DAY) < horaTerminoMin) {
+            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+        }else if (reservation.getDataTermino().get(Calendar.HOUR_OF_DAY) > horaTermMax) {
+            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+        }else if(reservation.getDataInicio().get(Calendar.DAY_OF_WEEK) == 1 ) {
+            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+        }else if (reservation.getDataInicio().before(dataAtual.getTimeInMillis())) {
+            return ResponseEntity.badRequest().build();
+        }else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
+            return ResponseEntity.badRequest().build();
+        } else {            
+            reservation.setStatus(StatusEvent.CONFIRMADO);
+            String token = null;
+            try {
+                // obtem o token da request
+                token = request.getHeader("Authorization");
+                // algoritimo para descriptografar
+                Algorithm algoritimo = Algorithm.HMAC256(UserRestController.SECRET);
+                // objeto para verificar o token
+                JWTVerifier verifier = JWT.require(algoritimo).withIssuer(UserRestController.EMISSOR).build();
+                // validar o token
+                System.out.println(token);
+                DecodedJWT decoded = verifier.verify(token);
+                // extrair os dados do payload
+                Map<String, Claim> payload = decoded.getClaims();
+                Long id = Long.parseLong(payload.get("usuario_id").toString());
+                Usuario user = new Usuario();
+                user.setId(id);
+                reservation.setUsuario(user);
+                repository.between(reservation.getDataInicio());
+                Reservation r = new Reservation();
+                String dataFormatada = new SimpleDateFormat("dd/MM/yyyy").format(r.getDataInicio().getTime());
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (token == null) {
+                    response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+                } else  {
+                    response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+                    System.out.println("Caiu aqui token");
 
+ 
+
+                }
+            }
+            repository.save(reservation);
+            
+        }
+        return ResponseEntity.ok().build();
+    }
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Reservation> getReservations() {
 		isFinalizada();
@@ -136,17 +157,17 @@ public class ReservationRestController {
 		// se o a reserva acabar enviar para o Histórico
 		return repository.save(reserva);
 	}
-	
+
 	@RequestMapping(value = "historico", method = RequestMethod.GET)
-    public Iterable<Reservation> getAllHistorico() {
-        return repository.findAllByStatus(StatusEvent.FINALIZADO);
-    }
-	
+	public Iterable<Reservation> getAllHistorico() {
+		return repository.findAllByStatus(StatusEvent.FINALIZADO);
+	}
+
 	@Privado
-	@RequestMapping(value="/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<Void> atualizarUsuario(@RequestBody Reservation reserva, @PathVariable("id") Long id) {
 		// valida o ID
-		if(id != reserva.getId()) {
+		if (id != reserva.getId()) {
 			throw new RuntimeException("ID Inválido");
 		}
 		// salva o usuario no BD
@@ -155,14 +176,26 @@ public class ReservationRestController {
 		HttpHeaders header = new HttpHeaders();
 		header.setLocation(URI.create("/api/reservation"));
 		return new ResponseEntity<Void>(header, HttpStatus.OK);
-		
+
 	}
-	
+
 	@RequestMapping(value = "/findbyall/{p}")
-	public Iterable<Reservation> findByAll(@PathVariable("p") String param){
+	public Iterable<Reservation> findByAll(@PathVariable("p") String param) {
 		return repository.procurarTudo(param);
 	}
 
-	
-	
+//	public Object isReservada(HttpServletResponse resp, Reservation res, Calendar dataInicio, Calendar dataTermino) {
+////		pega as datas para checar no bd
+//		dataInicio = res.getDataInicio();
+//		dataTermino = res.getDataTermino();
+////		se não voltar nada na vaidação do bd, ele autoriza de boa
+//		if (repository.findAllReservadas(dataInicio.toString(), dataTermino.toString()).contains(res)) {
+//			return new ResponseEntity<Void>(HttpStatus.UNAUTHORIZED);
+//		} else {
+//			// se não validar, ele trava
+//			return ResponseEntity.ok().build();
+//		}
+//
+//	}
+
 }

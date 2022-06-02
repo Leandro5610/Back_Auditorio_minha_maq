@@ -69,7 +69,6 @@ public class AppInterceptor implements HandlerInterceptor {
 					DecodedJWT jwt = verifier.verify(token);
 					// extrair os dados do payload
 					Map<String, Claim> payloadMap = jwt.getClaims();
-					System.out.println(payloadMap.get("usuario_id"));
 					return true;
 					}catch (Exception e) {
 						e.printStackTrace();

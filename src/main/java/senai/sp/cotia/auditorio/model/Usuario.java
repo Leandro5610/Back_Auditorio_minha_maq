@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import lombok.Data;
 import senai.sp.cotia.auditorio.type.Types;
+import senai.sp.cotia.auditorio.util.HashUtil;
 @Data
 @Entity
 public class Usuario {
@@ -30,4 +31,15 @@ public class Usuario {
 	@Enumerated(EnumType.STRING)
 	private Types type;
 	
+	public void setSenha(String senha) {
+    this.senha = HashUtil.hash256(senha);
+ }
+	
+	public void setSenhaComHash(String hash) {
+        // seta o hash na senha
+        this.senha = hash;
+	}
+	
 }
+
+

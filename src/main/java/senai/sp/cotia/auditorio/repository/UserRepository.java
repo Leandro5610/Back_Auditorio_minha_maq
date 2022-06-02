@@ -19,4 +19,7 @@ public interface UserRepository extends PagingAndSortingRepository<Usuario, Long
 	@Query("SELECT u FROM Usuario u WHERE u.type = 'comum'")
 	public List<Usuario> findAllByCommuns();
 	
+	@Query("SELECT u FROM Usuario u WHERE u.type = 'administrador'")
+    public List<Usuario> findAllByAdministrador();
+	
 }
