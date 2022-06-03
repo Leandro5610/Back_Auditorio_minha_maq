@@ -5,6 +5,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +38,7 @@ import senai.sp.cotia.auditorio.repository.ReservationRepository;
 import senai.sp.cotia.auditorio.repository.UserRepository;
 import senai.sp.cotia.auditorio.type.StatusEvent;
 
+@CrossOrigin
 @RestController
 @RequestMapping("api/reservation")
 public class ReservationRestController {
@@ -69,7 +72,7 @@ public class ReservationRestController {
         }else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
             return ResponseEntity.badRequest().build();
         } else {            
-            reservation.setStatus(StatusEvent.CONFIRMADO);
+            reservation.setStatus(StatusEvent.ANALISE);
             String token = null;
             try {
                 // obtem o token da request
@@ -88,8 +91,6 @@ public class ReservationRestController {
                 user.setId(id);
                 reservation.setUsuario(user);
                 repository.between(reservation.getDataInicio());
-                Reservation r = new Reservation();
-                String dataFormatada = new SimpleDateFormat("dd/MM/yyyy").format(r.getDataInicio().getTime());
             } catch (Exception e) {
                 e.printStackTrace();
                 if (token == null) {
@@ -107,10 +108,21 @@ public class ReservationRestController {
         }
         return ResponseEntity.ok().build();
     }
+	
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Reservation> getReservations() {
 		isFinalizada();
+		
+		
+		for (Reservation reserv : repository.findAll()) {
+		repository.findAll();
+		if(reserv.getStatus().equals(StatusEvent.ANALISE)) {
+			reserv.setStatus(StatusEvent.CONFIRMADO);
+			return repository.findAll();
+			}
+		}
 		return repository.findAll();
+		
 	}
 
 	public void isFinalizada() {
@@ -124,24 +136,20 @@ public class ReservationRestController {
 		}
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "deleta/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteReservation(@PathVariable("id") Long id) {
 		repository.deleteById(id);
 		return ResponseEntity.noContent().build();
 	}
 
-	@RequestMapping(value = "confirmada{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "confirmada/{id}", method = RequestMethod.PUT)
 	public Object statusConfirmada(Reservation reserva, @PathVariable("id") Long id) {
-		Calendar horaAtual = Calendar.getInstance();
-		if (id != null) {
+		if (id == null) {
 			throw new RuntimeException("Id Inválido");
-
-		} else if (reserva.getDataTermino().after(horaAtual)) {
+		}else {
 			reserva.setStatus(StatusEvent.CONFIRMADO);
-			repository.save(reserva);
+			return repository.save(reserva);
 		}
-		// se o a reserva acabar enviar para o Histórico
-		return repository.save(reserva);
 	}
 
 	@RequestMapping(value = "analise{id}", method = RequestMethod.PUT)
@@ -161,6 +169,18 @@ public class ReservationRestController {
 	@RequestMapping(value = "historico", method = RequestMethod.GET)
 	public Iterable<Reservation> getAllHistorico() {
 		return repository.findAllByStatus(StatusEvent.FINALIZADO);
+	}
+	
+	@Privado
+	@RequestMapping(value="pega/{id}", method = RequestMethod.GET)
+	public ResponseEntity<Reservation> findUsuario(@PathVariable("id") Long idReserva) {
+		// busca o usuario
+		 Optional<Reservation> reserva = repository.findById(idReserva);
+		 if(reserva.isPresent()) {
+			 return ResponseEntity.ok(reserva.get());
+		 }else {
+			 return ResponseEntity.notFound().build();
+		 }
 	}
 
 	@Privado
@@ -182,6 +202,24 @@ public class ReservationRestController {
 	@RequestMapping(value = "/findbyall/{p}")
 	public Iterable<Reservation> findByAll(@PathVariable("p") String param) {
 		return repository.procurarTudo(param);
+	}
+	
+	@RequestMapping(value = "minhas", method = RequestMethod.GET)
+	public Iterable<Reservation> minhasReservas(Long id, HttpServletRequest request,
+			HttpServletResponse response) {
+		String token = null;
+		// obtem o token da request
+		token = request.getHeader("Authorization");
+		// algoritimo para descriptografar
+		Algorithm algoritimo = Algorithm.HMAC256(UserRestController.SECRET);
+		// objeto para verificar o token
+		JWTVerifier verifier = JWT.require(algoritimo).withIssuer(UserRestController.EMISSOR).build();
+		// validar o token
+		DecodedJWT decoded = verifier.verify(token);
+		// extrair os dados do payload
+		Map<String, Claim> payload = decoded.getClaims();
+		id = Long.parseLong(payload.get("usuario_id").toString());
+		 return repository.findByUsuarioId(id);
 	}
 
 //	public Object isReservada(HttpServletResponse resp, Reservation res, Calendar dataInicio, Calendar dataTermino) {

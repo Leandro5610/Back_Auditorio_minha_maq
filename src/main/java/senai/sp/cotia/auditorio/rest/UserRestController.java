@@ -129,7 +129,7 @@ public class UserRestController {
 				payload.put("usuario_id", usuario.getId());
 				payload.put("usuario_nif", usuario.getNif());
 				payload.put("usuario_tipo", usuario.getType().toString());
-				//payload.put("usuario_nome", usuario.getNome());
+				//payload.put("usuario_nome", usuario.getNome()); 
 				// definir a data de expiração
 				Calendar expiracao = Calendar.getInstance();
 				expiracao.add(Calendar.HOUR, 1);
