@@ -3,6 +3,7 @@ package senai.sp.cotia.auditorio.model;
 
 import java.util.Calendar;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -10,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -24,8 +27,10 @@ public class Reservation {
 	private Long id;
 	private String titulo;
 	private String descricao;
+	@Column(unique = true)
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private Calendar dataInicio;
+	@Column(unique = true)
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private Calendar dataTermino;
 	private boolean repetir;

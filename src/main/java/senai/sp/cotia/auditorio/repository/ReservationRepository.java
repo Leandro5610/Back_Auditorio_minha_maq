@@ -22,10 +22,6 @@ public interface ReservationRepository extends PagingAndSortingRepository<Reserv
 			+ "OR res.dataTermino LIKE %:p% OR usuario.nome LIKE %:p% OR status LIKE %:p%")
     public List<Reservation> procurarTudo(@Param("p") String param);
 	
-	/*@Query("SELECT res FROM Reservation res WHERE res.status = 'CONFIRMADO' "
-			+ "OR res.status = 'ANALISE' AND :d between res.dataInicio AND res.dataTermino OR :d2 between res.dataInicio AND res.dataTermino")
-	public List<Reservation> findAllReservadas(@Param("d") Calendar dataIn, @Param("d2") Calendar dataTerm);*/
-	
 	@Query("SELECT res from Reservation res Where :r between res.dataInicio and res.dataTermino")
     public Reservation between(@Param("r")Calendar dataInicio);
 	

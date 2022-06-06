@@ -52,8 +52,6 @@ public class ReservationRestController {
         erro.setStatusCode(406);
         
         Calendar dataAtual = Calendar.getInstance();
-        Calendar diaEscolhido = Calendar.getInstance();
-        int dia = diaEscolhido.get(Calendar.DAY_OF_WEEK);
         int horaInicioMin=07, horaInicMax =21,horaTerminoMin=8,horaTermMax=22,minuto=31; 
           
     
@@ -97,9 +95,6 @@ public class ReservationRestController {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
                 } else  {
                     response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-                    System.out.println("Caiu aqui token");
-
- 
 
                 }
             }
@@ -109,21 +104,14 @@ public class ReservationRestController {
         return ResponseEntity.ok().build();
     }
 	
+	
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Reservation> getReservations() {
 		isFinalizada();
-		
-		
-		for (Reservation reserv : repository.findAll()) {
-		repository.findAll();
-		if(reserv.getStatus().equals(StatusEvent.ANALISE)) {
-			reserv.setStatus(StatusEvent.CONFIRMADO);
-			return repository.findAll();
-			}
-		}
 		return repository.findAll();
 		
 	}
+	
 
 	public void isFinalizada() {
 		Calendar horaAtual = Calendar.getInstance();
@@ -135,35 +123,26 @@ public class ReservationRestController {
 			}
 		}
 	}
-
+	
 	@RequestMapping(value = "deleta/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteReservation(@PathVariable("id") Long id) {
 		repository.deleteById(id);
 		return ResponseEntity.noContent().build();
 	}
-
+	
 	@RequestMapping(value = "confirmada/{id}", method = RequestMethod.PUT)
-	public Object statusConfirmada(Reservation reserva, @PathVariable("id") Long id) {
-		if (id == null) {
-			throw new RuntimeException("Id Inválido");
-		}else {
-			reserva.setStatus(StatusEvent.CONFIRMADO);
-			return repository.save(reserva);
-		}
-	}
-
-	@RequestMapping(value = "analise{id}", method = RequestMethod.PUT)
-	public Object statusAnalise(Reservation reserva, @PathVariable("id") Long id) {
-		Calendar horaAtual = Calendar.getInstance();
-		if (id != null) {
-			throw new RuntimeException("Id Inválido");
-
-		} else if (reserva.getDataTermino().after(horaAtual)) {
-			reserva.setStatus(StatusEvent.ANALISE);
-			repository.save(reserva);
-		}
-		// se o a reserva acabar enviar para o Histórico
-		return repository.save(reserva);
+	public ResponseEntity<Void> statusConfirmada(@RequestBody Reservation reserva, @PathVariable("id") Long id) {
+		// valida o ID
+				if (id != reserva.getId()) {
+					throw new RuntimeException("ID Inválido");
+				}
+				// salva o usuario no BD
+				reserva.setStatus(StatusEvent.CONFIRMADO);
+				repository.save(reserva);
+				// criar um cabeçalho HTTP
+				HttpHeaders header = new HttpHeaders();
+				header.setLocation(URI.create("/api/reservation"));
+				return new ResponseEntity<Void>(header, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "historico", method = RequestMethod.GET)
@@ -221,19 +200,5 @@ public class ReservationRestController {
 		id = Long.parseLong(payload.get("usuario_id").toString());
 		 return repository.findByUsuarioId(id);
 	}
-
-//	public Object isReservada(HttpServletResponse resp, Reservation res, Calendar dataInicio, Calendar dataTermino) {
-////		pega as datas para checar no bd
-//		dataInicio = res.getDataInicio();
-//		dataTermino = res.getDataTermino();
-////		se não voltar nada na vaidação do bd, ele autoriza de boa
-//		if (repository.findAllReservadas(dataInicio.toString(), dataTermino.toString()).contains(res)) {
-//			return new ResponseEntity<Void>(HttpStatus.UNAUTHORIZED);
-//		} else {
-//			// se não validar, ele trava
-//			return ResponseEntity.ok().build();
-//		}
-//
-//	}
 
 }

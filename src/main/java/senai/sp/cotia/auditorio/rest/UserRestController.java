@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,7 +44,7 @@ import senai.sp.cotia.auditorio.model.TokenJWT;
 import senai.sp.cotia.auditorio.model.Usuario;
 import senai.sp.cotia.auditorio.repository.UserRepository;
 
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/user")
 public class UserRestController {
