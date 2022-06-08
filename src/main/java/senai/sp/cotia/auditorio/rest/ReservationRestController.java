@@ -54,10 +54,13 @@ public class ReservationRestController {
         Calendar dataAtual = Calendar.getInstance();
         int horaInicioMin=7, horaInicMax =21,horaTerminoMin=8,horaTermMax=22,minuto=31; 
           
-    
+        System.out.println(dataAtual.getTime());
         if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY) < horaInicioMin) {
-            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+            System.out.println("Aqui"+reservation.getDataInicio());
+        	return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+            
         }else if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY) >= horaInicMax&& reservation.getDataInicio().get(Calendar.MINUTE) >= minuto ) {
+        	System.out.println("Aqui2"+reservation.getDataInicio());
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
         }else if (reservation.getDataTermino().get(Calendar.HOUR_OF_DAY) < horaTerminoMin) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
@@ -65,7 +68,7 @@ public class ReservationRestController {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
         }else if(reservation.getDataInicio().get(Calendar.DAY_OF_WEEK) == 1 ) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
-        }else if (reservation.getDataInicio().before(dataAtual)) {
+        }else if (reservation.getDataInicio().before(dataAtual.getTime())) {
             return ResponseEntity.badRequest().build();
         }else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
             return ResponseEntity.badRequest().build();

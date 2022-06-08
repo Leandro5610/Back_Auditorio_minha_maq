@@ -41,6 +41,7 @@ public class EmailService {
 
             emailModel.setStatusEmail(StatusEmail.SENT);
         } catch (MailException e){
+        	System.out.println(e.getMessage());
             e.printStackTrace();            
             emailModel.setStatusEmail(StatusEmail.ERROR);
         }
