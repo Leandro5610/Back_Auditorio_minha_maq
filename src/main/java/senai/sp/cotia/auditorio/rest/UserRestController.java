@@ -40,6 +40,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import senai.sp.cotia.auditorio.annotation.Privado;
 import senai.sp.cotia.auditorio.annotation.Publico;
 import senai.sp.cotia.auditorio.model.Erro;
+import senai.sp.cotia.auditorio.model.Reservation;
 import senai.sp.cotia.auditorio.model.TokenJWT;
 import senai.sp.cotia.auditorio.model.Usuario;
 import senai.sp.cotia.auditorio.repository.UserRepository;
@@ -203,17 +204,9 @@ public class UserRestController {
 			Long idl = Long.parseLong(id);
 			return ResponseEntity.ok(idl);
 		}
+		
+		@RequestMapping(value = "/findusuario/{p}")
+		public Iterable<Usuario> findByAll(@PathVariable("p") String param) {
+			return repository.procurarUsuario(param);
+		}
 }		
-		
-	
-		
-		
-		
-		
-		
-	
-
-
-
-
-

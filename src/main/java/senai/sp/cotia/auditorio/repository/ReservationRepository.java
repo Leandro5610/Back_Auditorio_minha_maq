@@ -27,4 +27,6 @@ public interface ReservationRepository extends PagingAndSortingRepository<Reserv
 	
 	
 	public List<Reservation> findByUsuarioId(Long id);
+	
+	
 }

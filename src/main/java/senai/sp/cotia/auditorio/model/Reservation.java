@@ -28,10 +28,10 @@ public class Reservation {
 	private String titulo;
 	private String descricao;
 	@Column(unique = true)
-	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private Calendar dataInicio;
 	@Column(unique = true)
-	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
 	private Calendar dataTermino;
 	private boolean repetir;
 	private String participantes;

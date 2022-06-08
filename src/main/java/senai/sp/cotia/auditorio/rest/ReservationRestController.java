@@ -52,24 +52,26 @@ public class ReservationRestController {
         erro.setStatusCode(406);
         
         Calendar dataAtual = Calendar.getInstance();
-        int horaInicioMin=07, horaInicMax =21,horaTerminoMin=8,horaTermMax=22,minuto=31; 
+        int horaInicioMin=7, horaInicMax =21,horaTerminoMin=8,horaTermMax=22,minuto=31; 
           
     
-         if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY) < horaInicioMin) {
+        if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY) < horaInicioMin) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
-        }else if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY)>= horaInicMax&& reservation.getDataInicio().get(Calendar.MINUTE) >= minuto ) {
+        }else if(reservation.getDataInicio().get(Calendar.HOUR_OF_DAY) >= horaInicMax&& reservation.getDataInicio().get(Calendar.MINUTE) >= minuto ) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
         }else if (reservation.getDataTermino().get(Calendar.HOUR_OF_DAY) < horaTerminoMin) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
-        }else if (reservation.getDataTermino().get(Calendar.HOUR_OF_DAY) > horaTermMax) {
+        }else if (reservation.getDataTermino().get(Calendar.HOUR_OF_DAY) >= horaTermMax && reservation.getDataTermino().get(Calendar.MINUTE) >= minuto) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
         }else if(reservation.getDataInicio().get(Calendar.DAY_OF_WEEK) == 1 ) {
             return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
-        }else if (reservation.getDataInicio().before(dataAtual.getTimeInMillis())) {
+        }else if (reservation.getDataInicio().before(dataAtual)) {
             return ResponseEntity.badRequest().build();
         }else if(reservation.getDataTermino().before(reservation.getDataInicio())) {
             return ResponseEntity.badRequest().build();
-        } else {            
+        }else if(repository.between(reservation.getDataInicio()) != null) {
+            return new ResponseEntity<Object>(erro, HttpStatus.NOT_ACCEPTABLE);
+        }else {            
             reservation.setStatus(StatusEvent.ANALISE);
             String token = null;
             try {
