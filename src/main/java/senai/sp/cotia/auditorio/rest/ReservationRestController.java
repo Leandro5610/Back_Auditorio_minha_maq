@@ -169,11 +169,12 @@ public class ReservationRestController {
 
 	@Privado
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Void> atualizarUsuario(@RequestBody Reservation reserva, @PathVariable("id") Long id) {
+	public ResponseEntity<Void> atualizarReserva(@RequestBody Reservation reserva, @PathVariable("id") Long id) {
 		// valida o ID
 		if (id != reserva.getId()) {
 			throw new RuntimeException("ID Inválido");
 		}
+		reserva.setStatus(StatusEvent.ANALISE);
 		// salva o usuario no BD
 		repository.save(reserva);
 		// criar um cabeçalho HTTP
