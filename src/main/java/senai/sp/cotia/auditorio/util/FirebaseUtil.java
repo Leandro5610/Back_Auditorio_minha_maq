@@ -20,7 +20,7 @@ import com.google.cloud.storage.StorageOptions;
 
 @Service
 public class FirebaseUtil {
-	// variável para guardar as credenciais do firebase
+/*	// variável para guardar as credenciais do firebase
 	private Credentials credenciais;
 	// variavel para acessar o storage
 	private Storage storage;
@@ -75,5 +75,5 @@ public class FirebaseUtil {
 		// deleta o arquivo
 		storage.delete(blob.getBlobId());
 	}
-	
+	*/
 }
